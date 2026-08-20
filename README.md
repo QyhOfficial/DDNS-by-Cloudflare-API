@@ -15,7 +15,7 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
-- The Windows script automatically creates the DNS record if it does not exist; the GCP script requires the record to **already exist** in Cloudflare
+- Both scripts automatically create the DNS record if it does not exist
 - GCP script requires `curl` and `jq`
 
 ## Environment Variables
