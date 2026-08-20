@@ -67,11 +67,7 @@ gcloud compute instances add-metadata INSTANCE_NAME \
 
 **Environment variables** must be set inside the script directly or passed via additional instance metadata and read with `curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/KEY`.
 
-For periodic updates (not just at boot), add a cron job on the VM:
-
-```bash
-*/10 * * * * /path/to/gcp-vm-update-A-record.sh
-```
+GCP ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
 
 ## Logs
 
