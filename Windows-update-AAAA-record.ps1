@@ -128,6 +128,42 @@ function Get-DNSRecordId {
     }
 }
 
+function New-CloudflareDNS {
+    param(
+        [string]$ZoneId,
+        [string]$IPv6Address
+    )
+
+    $headers = @{
+        "Authorization" = "Bearer $ApiToken"
+        "Content-Type" = "application/json"
+    }
+
+    $body = @{
+        type = "AAAA"
+        name = $FullDomain
+        content = $IPv6Address
+        ttl = 1
+        proxied = $false
+    } | ConvertTo-Json
+
+    try {
+        $response = Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/zones/$ZoneId/dns_records" -Method POST -Headers $headers -Body $body
+
+        if ($response.success) {
+            Write-Host "DNS record created successfully: $FullDomain -> $IPv6Address" -ForegroundColor Green
+            return $true
+        } else {
+            Write-Host "DNS creation failed: $($response.errors | ConvertTo-Json)" -ForegroundColor Red
+            return $false
+        }
+    }
+    catch {
+        Write-Host "API call failed: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
+}
+
 function Update-CloudflareDNS {
     param(
         [string]$ZoneId,
@@ -185,25 +221,24 @@ if (-not $zoneId) {
 
 # Get DNS record ID and current IP
 $dnsInfo = Get-DNSRecordId -ZoneId $zoneId -FullDomain $FullDomain
+
 if (-not $dnsInfo) {
-    Write-Host "Failed to get DNS record, exiting" -ForegroundColor Red
-    exit 1
-}
-
-$recordId = $dnsInfo.RecordId
-$dnsIPv6 = $dnsInfo.CurrentIP
-
-Write-Host "Current DNS record: $dnsIPv6" -ForegroundColor Cyan
-
-if ($dnsIPv6 -eq $currentIPv6) {
-    Write-Host "IP address unchanged, no update needed" -ForegroundColor Cyan
-    exit 0
+    Write-Host "DNS record does not exist, creating new record..." -ForegroundColor Yellow
+    $success = New-CloudflareDNS -ZoneId $zoneId -IPv6Address $currentIPv6
 } else {
-    Write-Host "IP address changed: $dnsIPv6 -> $currentIPv6" -ForegroundColor Yellow
-}
+    $recordId = $dnsInfo.RecordId
+    $dnsIPv6 = $dnsInfo.CurrentIP
 
-# Update DNS record
-$success = Update-CloudflareDNS -ZoneId $zoneId -RecordId $recordId -IPv6Address $currentIPv6
+    Write-Host "Current DNS record: $dnsIPv6" -ForegroundColor Cyan
+
+    if ($dnsIPv6 -eq $currentIPv6) {
+        Write-Host "IP address unchanged, no update needed" -ForegroundColor Cyan
+        exit 0
+    }
+
+    Write-Host "IP address changed: $dnsIPv6 -> $currentIPv6" -ForegroundColor Yellow
+    $success = Update-CloudflareDNS -ZoneId $zoneId -RecordId $recordId -IPv6Address $currentIPv6
+}
 
 if ($success) {
     Write-Host "====== IPv6 DDNS update completed ======" -ForegroundColor Cyan
