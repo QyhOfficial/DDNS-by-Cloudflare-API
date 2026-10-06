@@ -74,10 +74,11 @@ GCP ephemeral external IPs only change on VM reboot, so running the script at st
 
 Configure the script to run on instance boot via cloud-init.
 
-1. Upload the script to the instance (e.g. `/usr/local/sbin/oci-vm-update-A-record.sh`) and make it executable:
+1. Upload the script to the instance (e.g. `/usr/local/sbin/oci-vm-update-A-record.sh`) and make it executable. If SELinux is enabled (default on Oracle Linux), restore the correct security context so systemd can execute it:
 
    ```bash
    chmod +x /usr/local/sbin/oci-vm-update-A-record.sh
+   restorecon -v /usr/local/sbin/oci-vm-update-A-record.sh
    ```
 
 2. Set the environment variables in `/etc/environment` or in a wrapper script:
