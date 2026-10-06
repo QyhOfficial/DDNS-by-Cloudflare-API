@@ -16,10 +16,10 @@ if ! command -v curl &> /dev/null || ! command -v jq &> /dev/null; then
 fi
 
 # --- Cloudflare Configuration ---
-# Cloudflare API token (read from environment variable)
-CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:?Error: CLOUDFLARE_API_TOKEN environment variable is not set}"
-# Domain name (read from environment variable)
-CLOUDFLARE_ZONE_NAME="${CLOUDFLARE_ZONE_NAME:?Error: CLOUDFLARE_ZONE_NAME environment variable is not set}"
+# Cloudflare API token
+CLOUDFLARE_API_TOKEN="your-api-token"
+# Domain name
+CLOUDFLARE_ZONE_NAME="example.com"
 # A record name to update (e.g. www, blog, @)
 CLOUDFLARE_RECORD_NAME="gcp"
 

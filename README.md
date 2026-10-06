@@ -19,16 +19,18 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 - Both scripts automatically create the DNS record if it does not exist
 - GCP and OCI scripts require `curl` and `jq`
 
-## Environment Variables
+## Configuration
 
-Both scripts read configuration from environment variables:
+Each script requires the following settings:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token | Yes |
-| `CLOUDFLARE_ZONE_NAME` | Root domain, e.g. `example.com` | Yes |
+| Variable | Description |
+|----------|-------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token |
+| `CLOUDFLARE_ZONE_NAME` | Root domain, e.g. `example.com` |
+| `CLOUDFLARE_RECORD_NAME` | Subdomain prefix (default: `omen` / `gcp` / `oci`) |
 
-The subdomain prefix is hardcoded in each script (`omen` for Windows, `gcp` for GCP, `oci` for OCI). Edit the `$RecordName` or `CLOUDFLARE_RECORD_NAME` variable in the script to change it.
+- **GCP script**: Edit the variables directly in the script before deploying.
+- **Windows / OCI script**: Read from environment variables. See the setup sections below for how to configure them.
 
 ## Setup as Startup Script
 
@@ -50,23 +52,12 @@ The subdomain prefix is hardcoded in each script (`omen` for Windows, `gcp` for 
 
 ### GCP VM (Instance Startup Script)
 
-Configure the script as a GCP instance startup script via the cloud platform. It will run automatically every time the VM boots.
-
-**Option A: Set via gcloud CLI**
-
-```bash
-gcloud compute instances add-metadata INSTANCE_NAME \
-  --metadata-from-file startup-script=gcp-vm-update-A-record.sh
-```
-
-**Option B: Set via GCP Console**
+Configure the script as a GCP instance startup script. Edit the configuration variables at the top of the script before deploying. It will run automatically every time the VM boots.
 
 1. Go to **Compute Engine** -> **VM instances**
 2. Click on the instance -> **Edit**
 3. Under **Metadata**, add a key `startup-script` with the script content as the value
 4. Save
-
-**Environment variables** must be set inside the script directly or passed via additional instance metadata and read with `curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/KEY`.
 
 GCP ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
 
