@@ -8,6 +8,7 @@ Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Inc
 |--------|----------|-------------|-----------|
 | `Windows-update-AAAA-record.ps1` | Windows | AAAA (IPv6) | Parses `ipconfig` output for public IPv6 address |
 | `gcp-vm-update-A-record.sh` | GCP Linux VM | A (IPv4) | GCP Metadata API (`metadata.google.internal`) |
+| `oci-vm-update-A-record.sh` | OCI Linux VM | A (IPv4) | OCI Instance Metadata Service v2 (`169.254.169.254`) |
 
 Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed, skip if unchanged.
 
@@ -16,7 +17,7 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
 - Both scripts automatically create the DNS record if it does not exist
-- GCP script requires `curl` and `jq`
+- GCP and OCI scripts require `curl` and `jq`
 
 ## Environment Variables
 
@@ -27,7 +28,7 @@ Both scripts read configuration from environment variables:
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API Token | Yes |
 | `CLOUDFLARE_ZONE_NAME` | Root domain, e.g. `example.com` | Yes |
 
-The subdomain prefix is hardcoded in each script (`omen` for Windows, `gcp` for GCP). Edit the `$RecordName` or `CLOUDFLARE_RECORD_NAME` variable in the script to change it.
+The subdomain prefix is hardcoded in each script (`omen` for Windows, `gcp` for GCP, `oci` for OCI). Edit the `$RecordName` or `CLOUDFLARE_RECORD_NAME` variable in the script to change it.
 
 ## Setup as Startup Script
 
@@ -69,7 +70,47 @@ gcloud compute instances add-metadata INSTANCE_NAME \
 
 GCP ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
 
+### OCI VM (Cloud-Init)
+
+Configure the script to run on instance boot via cloud-init.
+
+1. Upload the script to the instance (e.g. `/opt/scripts/oci-vm-update-A-record.sh`) and make it executable:
+
+   ```bash
+   chmod +x /opt/scripts/oci-vm-update-A-record.sh
+   ```
+
+2. Set the environment variables in `/etc/environment` or in a wrapper script:
+
+   ```bash
+   echo 'CLOUDFLARE_API_TOKEN=your-api-token' >> /etc/environment
+   echo 'CLOUDFLARE_ZONE_NAME=example.com' >> /etc/environment
+   ```
+
+3. Create a systemd service to run the script at boot:
+
+   ```bash
+   cat > /etc/systemd/system/cloudflare-ddns.service << 'EOF'
+   [Unit]
+   Description=Update Cloudflare DNS record with current public IP
+   After=network-online.target
+   Wants=network-online.target
+
+   [Service]
+   Type=oneshot
+   EnvironmentFile=/etc/environment
+   ExecStart=/opt/scripts/oci-vm-update-A-record.sh
+
+   [Install]
+   WantedBy=multi-user.target
+   EOF
+
+   systemctl enable cloudflare-ddns.service
+   ```
+
+OCI reserved public IPs persist across reboots, but ephemeral public IPs may change — running the script at startup keeps the DNS record in sync.
+
 ## Logs
 
 - **Windows script**: Outputs to console (viewable in Task Scheduler history)
-- **GCP script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
+- **GCP / OCI script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
