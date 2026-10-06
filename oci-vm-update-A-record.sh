@@ -35,14 +35,13 @@ if [ -z "$ZONE_ID" ]; then
 fi
 echo "$(date): Found Zone ID: ${ZONE_ID}" >> "$LOG_FILE"
 
-# Get the VM's current public IP address via OCI Instance Metadata Service v2 (IMDS v2)
-echo "$(date): Fetching current public IP address from OCI IMDS v2..." >> "$LOG_FILE"
-VNIC_INFO=$(curl -s -H "Authorization: Bearer Oracle" \
-     "http://169.254.169.254/opc/v2/vnics/")
-CURRENT_IP=$(echo "$VNIC_INFO" | jq -r '.[0].publicIp')
+# Get the VM's current public IP address via external service (Cloudflare-operated)
+# OCI IMDS VNIC metadata does not always include publicIp
+echo "$(date): Fetching current public IP address..." >> "$LOG_FILE"
+CURRENT_IP=$(curl -s --max-time 10 https://icanhazip.com | tr -d '[:space:]')
 
-if [ -z "$CURRENT_IP" ] || [ "$CURRENT_IP" == "null" ]; then
-    echo "$(date): Error: Failed to retrieve public IP from OCI IMDS. Is this running on an OCI instance with a public IP?" >> "$LOG_FILE"
+if [ -z "$CURRENT_IP" ]; then
+    echo "$(date): Error: Failed to retrieve public IP. Check network connectivity." >> "$LOG_FILE"
     exit 1
 fi
 echo "$(date): Current IP address: ${CURRENT_IP}" >> "$LOG_FILE"

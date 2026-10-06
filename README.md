@@ -74,10 +74,10 @@ GCP ephemeral external IPs only change on VM reboot, so running the script at st
 
 Configure the script to run on instance boot via cloud-init.
 
-1. Upload the script to the instance (e.g. `/opt/scripts/oci-vm-update-A-record.sh`) and make it executable:
+1. Upload the script to the instance (e.g. `/usr/local/sbin/oci-vm-update-A-record.sh`) and make it executable:
 
    ```bash
-   chmod +x /opt/scripts/oci-vm-update-A-record.sh
+   chmod +x /usr/local/sbin/oci-vm-update-A-record.sh
    ```
 
 2. Set the environment variables in `/etc/environment` or in a wrapper script:
@@ -99,7 +99,7 @@ Configure the script to run on instance boot via cloud-init.
    [Service]
    Type=oneshot
    EnvironmentFile=/etc/environment
-   ExecStart=/opt/scripts/oci-vm-update-A-record.sh
+   ExecStart=/usr/local/sbin/oci-vm-update-A-record.sh
 
    [Install]
    WantedBy=multi-user.target
