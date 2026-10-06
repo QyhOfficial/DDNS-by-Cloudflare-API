@@ -16,7 +16,6 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
-- Google Cloud and Oracle Cloud scripts require `curl` and `jq`
 
 ## Configuration
 
