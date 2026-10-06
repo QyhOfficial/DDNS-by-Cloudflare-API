@@ -8,7 +8,7 @@ Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Inc
 |--------|----------|-------------|-----------|
 | `Windows-update-AAAA-record.ps1` | Windows | AAAA (IPv6) | Parses `ipconfig` output for public IPv6 address |
 | `gcp-vm-update-A-record.sh` | Google Cloud Linux VM | A (IPv4) | GCP Metadata API (`metadata.google.internal`) |
-| `oci-vm-update-A-record.sh` | Oracle Cloud Infrastructure Linux VM | A (IPv4) | [icanhazip.com](https://icanhazip.com) |
+| `oci-vm-update-A-record.sh` | Oracle Cloud Linux VM | A (IPv4) | [icanhazip.com](https://icanhazip.com) |
 
 Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed, skip if unchanged.
 
@@ -17,7 +17,7 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
 - Both scripts automatically create the DNS record if it does not exist
-- Google Cloud and Oracle Cloud Infrastructure scripts require `curl` and `jq`
+- Google Cloud and Oracle Cloud scripts require `curl` and `jq`
 
 ## Configuration
 
@@ -30,7 +30,7 @@ Each script requires the following settings:
 | `CLOUDFLARE_RECORD_NAME` | Subdomain prefix (default: `omen` / `gcp` / `oci`) |
 
 - **Google Cloud script**: Edit the variables directly in the script before deploying.
-- **Windows / Oracle Cloud Infrastructure script**: Read from environment variables. See the setup sections below for how to configure them.
+- **Windows / Oracle Cloud script**: Read from environment variables. See the setup sections below for how to configure them.
 
 ## Setup as Startup Script
 
@@ -61,7 +61,7 @@ Configure the script as a Google Cloud instance startup script. Edit the configu
 
 Google Cloud ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
 
-### Oracle Cloud Infrastructure VM (systemd)
+### Oracle Cloud VM (systemd)
 
 Configure the script to run on instance boot via systemd.
 
@@ -105,4 +105,4 @@ Oracle Cloud reserved public IPs persist across reboots, but ephemeral public IP
 ## Logs
 
 - **Windows script**: Outputs to console (viewable in Task Scheduler history)
-- **Google Cloud / Oracle Cloud Infrastructure script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
+- **Google Cloud / Oracle Cloud script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
