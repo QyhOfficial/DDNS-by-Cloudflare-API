@@ -7,7 +7,7 @@ Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Inc
 | Script | Platform | Record Type | IP Source |
 |--------|----------|-------------|-----------|
 | `Windows-update-AAAA-record.ps1` | Windows | AAAA (IPv6) | Parses `ipconfig` output for public IPv6 address |
-| `gcp-vm-update-A-record.sh` | Google Cloud Linux VM | A (IPv4) | GCP VM Metadata endpoint (`metadata.google.internal`) |
+| `gcp-vm-update-A-record.sh` | Google Cloud Linux VM | A (IPv4) | [GCP VM Metadata endpoint](https://docs.cloud.google.com/compute/docs/metadata/overview) |
 | `oci-vm-update-A-record.sh` | Oracle Cloud Linux VM | A (IPv4) | [icanhazip.com](https://icanhazip.com) |
 
 Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed, skip if unchanged.
