@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# --- Cloudflare Configuration ---
+# Cloudflare API token
+CLOUDFLARE_API_TOKEN="your-api-token"
+# Domain name
+CLOUDFLARE_ZONE_NAME="example.com"
+# A record name to update (e.g. www, blog, @)
+CLOUDFLARE_RECORD_NAME="gcp"
+
 # Log file path
 LOG_FILE="/var/log/cloudflare-dns-update.log"
 
@@ -14,14 +22,6 @@ if ! command -v curl &> /dev/null || ! command -v jq &> /dev/null; then
     echo "$(date): Error: curl or jq not found. Please install them first." >> "$LOG_FILE"
     exit 1
 fi
-
-# --- Cloudflare Configuration ---
-# Cloudflare API token
-CLOUDFLARE_API_TOKEN="your-api-token"
-# Domain name
-CLOUDFLARE_ZONE_NAME="example.com"
-# A record name to update (e.g. www, blog, @)
-CLOUDFLARE_RECORD_NAME="gcp"
 
 # Look up Cloudflare Zone ID
 echo "$(date): Looking up Cloudflare Zone ID..." >> "$LOG_FILE"

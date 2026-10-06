@@ -7,8 +7,8 @@ Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Inc
 | Script | Platform | Record Type | IP Source |
 |--------|----------|-------------|-----------|
 | `Windows-update-AAAA-record.ps1` | Windows | AAAA (IPv6) | Parses `ipconfig` output for public IPv6 address |
-| `gcp-vm-update-A-record.sh` | GCP Linux VM | A (IPv4) | GCP Metadata API (`metadata.google.internal`) |
-| `oci-vm-update-A-record.sh` | OCI Linux VM | A (IPv4) | OCI Instance Metadata Service v2 (`169.254.169.254`) |
+| `gcp-vm-update-A-record.sh` | Google Cloud Linux VM | A (IPv4) | GCP Metadata API (`metadata.google.internal`) |
+| `oci-vm-update-A-record.sh` | Oracle Cloud Infrastructure Linux VM | A (IPv4) | [icanhazip.com](https://icanhazip.com) |
 
 Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed, skip if unchanged.
 
@@ -17,7 +17,7 @@ Both scripts follow the same workflow: get current IP -> query existing Cloudfla
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
 - Both scripts automatically create the DNS record if it does not exist
-- GCP and OCI scripts require `curl` and `jq`
+- Google Cloud and Oracle Cloud Infrastructure scripts require `curl` and `jq`
 
 ## Configuration
 
@@ -29,8 +29,8 @@ Each script requires the following settings:
 | `CLOUDFLARE_ZONE_NAME` | Root domain, e.g. `example.com` |
 | `CLOUDFLARE_RECORD_NAME` | Subdomain prefix (default: `omen` / `gcp` / `oci`) |
 
-- **GCP script**: Edit the variables directly in the script before deploying.
-- **Windows / OCI script**: Read from environment variables. See the setup sections below for how to configure them.
+- **Google Cloud script**: Edit the variables directly in the script before deploying.
+- **Windows / Oracle Cloud Infrastructure script**: Read from environment variables. See the setup sections below for how to configure them.
 
 ## Setup as Startup Script
 
@@ -50,20 +50,20 @@ Each script requires the following settings:
      - Program: `powershell.exe`
      - Arguments: `-ExecutionPolicy Bypass -File "C:\path\to\Windows-update-AAAA-record.ps1"`
 
-### GCP VM (Instance Startup Script)
+### Google Cloud VM (Instance Startup Script)
 
-Configure the script as a GCP instance startup script. Edit the configuration variables at the top of the script before deploying. It will run automatically every time the VM boots.
+Configure the script as a Google Cloud instance startup script. Edit the configuration variables at the top of the script before deploying. It will run automatically every time the VM boots.
 
 1. Go to **Compute Engine** -> **VM instances**
 2. Click on the instance -> **Edit**
 3. Under **Metadata**, add a key `startup-script` with the script content as the value
 4. Save
 
-GCP ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
+Google Cloud ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
 
-### OCI VM (Cloud-Init)
+### Oracle Cloud Infrastructure VM (systemd)
 
-Configure the script to run on instance boot via cloud-init.
+Configure the script to run on instance boot via systemd.
 
 1. Upload the script to the instance (e.g. `/usr/local/sbin/oci-vm-update-A-record.sh`) and make it executable. If SELinux is enabled (default on Oracle Linux), restore the correct security context so systemd can execute it:
 
@@ -100,9 +100,9 @@ Configure the script to run on instance boot via cloud-init.
    systemctl enable cloudflare-ddns.service
    ```
 
-OCI reserved public IPs persist across reboots, but ephemeral public IPs may change — running the script at startup keeps the DNS record in sync.
+Oracle Cloud reserved public IPs persist across reboots, but ephemeral public IPs may change — running the script at startup keeps the DNS record in sync.
 
 ## Logs
 
 - **Windows script**: Outputs to console (viewable in Task Scheduler history)
-- **GCP / OCI script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
+- **Google Cloud / Oracle Cloud Infrastructure script**: Writes to `/var/log/cloudflare-dns-update.log` (overwritten on each run)
