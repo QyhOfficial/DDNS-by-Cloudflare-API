@@ -10,13 +10,12 @@ Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Inc
 | `gcp-vm-update-A-record.sh` | Google Cloud Linux VM | A (IPv4) | [GCP VM Metadata endpoint](https://docs.cloud.google.com/compute/docs/metadata/overview) |
 | `oci-vm-update-A-record.sh` | Oracle Cloud Linux VM | A (IPv4) | [icanhazip.com](https://icanhazip.com) |
 
-Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed, skip if unchanged.
+Both scripts follow the same workflow: get current IP -> query existing Cloudflare record -> update if changed.
 
 ## Prerequisites
 
 - A domain managed by Cloudflare
 - A [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) with DNS edit permission
-- Both scripts automatically create the DNS record if it does not exist
 - Google Cloud and Oracle Cloud scripts require `curl` and `jq`
 
 ## Configuration
@@ -52,14 +51,14 @@ Each script requires the following settings:
 
 ### Google Cloud VM (Instance Startup Script)
 
-Configure the script as a Google Cloud instance startup script. Edit the configuration variables at the top of the script before deploying. It will run automatically every time the VM boots.
+Configure the script as a Compute Engine instance startup script. Edit the configuration variables at the top of the script before deploying. It will run automatically every time the VM boots.
 
 1. Go to **Compute Engine** -> **VM instances**
 2. Click on the instance -> **Edit**
 3. Under **Metadata**, add a key `startup-script` with the script content as the value
 4. Save
 
-Google Cloud ephemeral external IPs only change on VM reboot, so running the script at startup is sufficient — no periodic scheduling is needed.
+Google Cloud ephemeral external IPs only change on VM reboot, so running the script at startup keep the DNS record updated on time.
 
 ### Oracle Cloud VM (systemd)
 
