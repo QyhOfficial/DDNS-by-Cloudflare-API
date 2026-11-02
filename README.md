@@ -1,6 +1,6 @@
 # DDNS by Cloudflare API
 
-Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Includes two scripts for different platforms and scenarios, both designed to run as **startup scripts**.
+Automatically update Cloudflare DNS records to implement Dynamic DNS (DDNS). Includes scripts for different platforms and scenarios, all designed to run as **startup scripts**.
 
 ## Scripts
 
